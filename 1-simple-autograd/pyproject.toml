@@ -1,0 +1,16 @@
+[project]
+name = "1-simple-autograd"
+version = "0.1.0"
+description = "Simple autograd engine"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "lib",
+    "numpy>=2.3.1",
+]
+
+[tool.uv.sources]
+lib = { path = "../lib", editable = true }
+
+[tool.pyright]
+extraPaths = ["../lib"]

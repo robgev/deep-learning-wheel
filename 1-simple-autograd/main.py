@@ -14,15 +14,12 @@ class Layer:
         pass
 
     def calculate(self, inp): 
-        self.pre_activation = self.v_weight * inp + self.v_bias
+        self.pre_activation = self.v_weight.T @ inp + self.v_bias
 
     def activate(self):
         self.output = self.activation.f(self.pre_activation)
     def back(self, dL_dI):
-        return dL_dI * self.v_weight * self.activation.df(self.pre_activation)
-
-# TODO: Maybe define Input Layer 
-# TODO: Maybe define Output Layer 
+        return self.v_weight @ dL_dI
 
 class NeuralNetwork:
     def __init__(self, lr, layers: Sequence[Layer], error: Error, epochs, tolerance) -> None:
@@ -34,9 +31,8 @@ class NeuralNetwork:
         pass
 
     def forward(self, x):
-        self.layers[0].output = x
-        for i, layer in enumerate(self.layers, 1):
-            layer.calculate(self.layers[i - 1].output)
+        for i, layer in enumerate(self.layers):
+            layer.calculate(x if i == 0 else self.layers[i - 1].output)
             layer.activate()
             self.layers[i].output = layer.output
 
@@ -44,9 +40,11 @@ class NeuralNetwork:
 
     def backward(self, y_true, output):
         delta = self.error.df(y_true, output)
-        for i in range(len(self.layers) - 1, 0, -1):
+        for i in range(len(self.layers) - 1, -1, -1):
+            delta *= self.layers[i].activation.df(self.layers[i].pre_activation)
+            layer_input = np.array(x if i == 0 else self.layers[i - 1].output).T
+            self.layers[i].gradient = (delta @ layer_input).T
             delta = self.layers[i].back(delta)
-            self.layers[i].gradient = delta * self.layers[i - 1].output
 
     def update(self):
         for layer in self.layers:
@@ -64,10 +62,10 @@ class NeuralNetwork:
 
 
 if __name__ == "__main__":
-    hidden = Layer(v_weight=[0.5, 0.5], v_bias=[0, 0], activation=sigmoid)
-    output = Layer(v_weight=[0.5], v_bias=[0], activation=sigmoid)
+    hidden = Layer(v_weight=np.random.randn(2, 2), v_bias=np.random.randn(2, 1), activation=sigmoid)
+    output = Layer(v_weight=np.random.randn(2, 1), v_bias=np.random.randn(1, 1), activation=sigmoid)
 
-    net = NeuralNetwork(lr=0.5, layers=[hidden, output], error=mse, epochs=100, tolerance=0.0001)
+    net = NeuralNetwork(lr=0.001, layers=[hidden, output], error=mse, epochs=100, tolerance=0.0001)
 
     x = np.array([[0, 0, 1, 1],
                    [0, 1, 0, 1]])

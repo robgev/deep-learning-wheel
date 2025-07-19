@@ -43,11 +43,11 @@ If we feed O1 as input to O2 then
 O2 = sigmoid(W2 * O1 + B2), P2 = W2 * O1 + B2
 ```
 dL / dW2 = dL/dO2 * dO2/dP2 * dP2/dW2
-           ----------------   .......
+           ------   ..................
 ```
 ```
 dL / dW1 = dL/dO2 * dO2/dP2 * dP2/dO1 * dO1/dP1 * dP1/dW1
-           ----------------   ~~~~~~~~~~~~~~~~~   .......
+           ------   ~~~~~~~~~~~~~~~~~    .................
 ```
 
 As you can see first 2 members are the same, each layer's last member is the same.
